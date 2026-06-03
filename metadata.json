@@ -1,0 +1,10 @@
+{
+  "name": "Remix: Conecta Comunidade",
+  "description": "Aplicativo de conexão local trazendo oportunidades de trabalho, serviços e ações comunitárias em um só mapa.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
