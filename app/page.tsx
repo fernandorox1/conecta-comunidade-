@@ -3292,9 +3292,9 @@ export default function HomeLayout() {
             className="fixed bottom-20 left-4 right-4 z-[100]"
           >
             <div className={cn(
-              "px-4 py-3 rounded-xl shadow-xl flex items-center justify-between gap-3 text-white max-w-sm mx-auto",
+              "px-4 py-3 rounded-xl shadow-xl flex items-center justify-between gap-3 text-white max-w-sm mx-auto animate-fade-in",
               toast.type === 'error' ? "bg-error" : 
-              toast.type === 'info' ? "bg-[#326095]" : "bg-tertiary-container text-white"
+              toast.type === 'info' ? "bg-[#326095]" : "bg-[#074275] text-white"
             )}>
               <span className="text-xs font-semibold leading-relaxed">{toast.message}</span>
               <button onClick={() => setToast(null)} className="shrink-0 p-1 rounded-full hover:bg-white/20">
