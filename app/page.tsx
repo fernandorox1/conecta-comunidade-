@@ -95,11 +95,11 @@ export default function HomeLayout() {
   const [activeTab, setActiveTab] = React.useState<'inicio' | 'oportunidades' | 'servicos' | 'projetos' | 'perfil'>('inicio');
 
   // AUTH SYSTEM STATE
-  const [isLoggedIn, setIsLoggedIn] = React.useState(true);
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [currentUser, setCurrentUser] = React.useState({
-    username: 'gabriel',
-    name: 'Gabriel Martins',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC0vQhFExfL0b6f-c8y4lY3AGBTF86ppslMnxPkyRFT6KbVE5BDwMzBFNJ4K6G1MDBotAbyPfKJQM-w1z4TNwfmPTiSqpTV7PN6aW0HrlAab27lcAeER0m900tuqVix5ltW8JCHJKLqmMfK6hUQfk4vzTTSnT69coewjD0g203g4WoUf3ddAJS59eTj1zP3vKPweUXXHs0-O_vbW1IA4Lv5MMvfmTHvA4B8D7TD_zVeU01ey8ynXNSij8TDPqZGtvmVoxzGKPE7JD4'
+    username: '',
+    name: '',
+    avatar: ''
   });
   const [registeredUsers, setRegisteredUsers] = React.useState([
     {
@@ -120,9 +120,9 @@ export default function HomeLayout() {
 
   // APP GLOBAL STATE
   const [profile, setProfile] = React.useState({
-    name: 'Gabriel Martins',
+    name: 'Visitante',
     location: 'Ponta Grossa - PR',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC0vQhFExfL0b6f-c8y4lY3AGBTF86ppslMnxPkyRFT6KbVE5BDwMzBFNJ4K6G1MDBotAbyPfKJQM-w1z4TNwfmPTiSqpTV7PN6aW0HrlAab27lcAeER0m900tuqVix5ltW8JCHJKLqmMfK6hUQfk4vzTTSnT69coewjD0g203g4WoUf3ddAJS59eTj1zP3vKPweUXXHs0-O_vbW1IA4Lv5MMvfmTHvA4B8D7TD_zVeU01ey8ynXNSij8TDPqZGtvmVoxzGKPE7JD4',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=100',
     servicesCount: 12,
   });
 
@@ -161,31 +161,41 @@ export default function HomeLayout() {
         }
       }
 
-      const storedIsLoggedIn = localStorage.getItem('cc_is_logged_in');
-      if (storedIsLoggedIn !== null) {
-        setTimeout(() => {
-          setIsLoggedIn(storedIsLoggedIn === 'true');
-        }, 0);
-      }
-
       const storedCurrentUser = localStorage.getItem('cc_current_user');
+      let parsedUser = null;
       if (storedCurrentUser) {
         try {
-          const parsed = JSON.parse(storedCurrentUser);
-          setTimeout(() => {
-            setCurrentUser(parsed);
-          }, 0);
+          parsedUser = JSON.parse(storedCurrentUser);
         } catch (e) {
           console.error('Error loading current user from localStorage', e);
         }
       }
+
+      const storedIsLoggedIn = localStorage.getItem('cc_is_logged_in');
+      const shouldBeLoggedIn = storedIsLoggedIn === 'true' && parsedUser && parsedUser.username && parsedUser.username !== 'gabriel' && parsedUser.username !== '';
+
+      setTimeout(() => {
+        setIsLoggedIn(!!shouldBeLoggedIn);
+        if (shouldBeLoggedIn && parsedUser) {
+          setCurrentUser(parsedUser);
+        } else {
+          setCurrentUser({ username: '', name: '', avatar: '' });
+          setProfile(prev => ({
+            ...prev,
+            name: 'Visitante',
+            avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=100'
+          }));
+        }
+      }, 0);
 
       const storedProfile = localStorage.getItem('cc_profile');
       if (storedProfile) {
         try {
           const parsed = JSON.parse(storedProfile);
           setTimeout(() => {
-            setProfile(parsed);
+            if (shouldBeLoggedIn) {
+              setProfile(parsed);
+            }
           }, 0);
         } catch (e) {
           console.error('Error loading profile from localStorage', e);
@@ -847,6 +857,235 @@ export default function HomeLayout() {
     a.location.toLowerCase().includes(actionSearchQuery.toLowerCase())
   );
 
+  if (!isInitialized) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 font-sans">
+        <div className="text-center flex flex-col items-center gap-3">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-xs font-bold text-slate-500 font-sans mt-2 animate-pulse">Carregando Conecta Comunidade...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isInitialized && !isLoggedIn) {
+    return (
+      <div className="flex flex-col min-h-screen bg-slate-50 text-slate-800 font-sans select-none items-center justify-center p-4">
+        <div className="w-full max-w-sm bg-white rounded-3xl border border-slate-200 shadow-xl p-6 md:p-8 flex flex-col gap-5">
+          {/* Logo / Header */}
+          <div className="text-center flex flex-col items-center">
+            <div className="relative w-20 h-20 mb-3">
+              <img 
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRElabvdVeukzxlWO7K68TZbISdVld_pVu016aaFscHM9N3xCQD2Ad2S7uctDlUbZo4jDiPCuPn1OQJLjgiLqvgReoKd9QQqaScPKyN3d8UQGSVvBInZlp0CdGVTm80IHg8W0BjomFjYOT5wDbU4eOtrThzJ3p9skjqAAR-8IcByhmBbV-qlDS0Znyd1TnYyIc76GKBOOZT83njkRZotNFOESHsvsXeRW7OHqt18kX4kF1fKtA1DHIv_z9EDOte4_quwmwvi9QqF0"
+                alt="Conecta Comunidade Logo"
+                className="w-20 h-20 object-contain"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Conecta Comunidade</h1>
+            <p className="text-xs text-slate-500 mt-1 max-w-xs leading-relaxed">
+              Vagas de emprego, serviços locais e projetos sociais de Ponta Grossa.
+            </p>
+          </div>
+
+          {/* Toggle Tab */}
+          <div className="grid grid-cols-2 bg-slate-100 p-1 rounded-xl">
+            <button
+              type="button"
+              onClick={() => setAuthTab('login')}
+              className={cn(
+                "py-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center",
+                authTab === 'login' ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
+              )}
+            >
+              Fazer Login
+            </button>
+            <button
+              type="button"
+              onClick={() => setAuthTab('register')}
+              className={cn(
+                "py-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center",
+                authTab === 'register' ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
+              )}
+            >
+              Criar Conta
+            </button>
+          </div>
+
+          {/* Form Fields */}
+          <div className="space-y-3.5">
+            {authTab === 'register' && (
+              <div>
+                <label className="block text-[10px] uppercase font-extrabold text-slate-400 mb-1">
+                  Nome Completo
+                </label>
+                <input 
+                  type="text" 
+                  placeholder="Ex: Pedro Silva"
+                  value={authName}
+                  onChange={(e) => setAuthName(e.target.value)}
+                  className="w-full bg-[#eff4ff] text-xs font-semibold px-3 py-2.5 rounded-xl border-none focus:ring-2 focus:ring-blue-500 text-slate-800 placeholder-slate-400"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-[10px] uppercase font-extrabold text-slate-400 mb-1">
+                Nome de Usuário
+              </label>
+              <input 
+                type="text" 
+                placeholder="Ex: pedrosilva"
+                value={authUsername}
+                onChange={(e) => setAuthUsername(e.target.value)}
+                className="w-full bg-[#eff4ff] text-xs font-semibold px-3 py-2.5 rounded-xl border-none focus:ring-2 focus:ring-blue-500 text-slate-800 placeholder-slate-400"
+              />
+              {authTab === 'register' && (
+                <div className="mt-1.5 p-2.5 bg-amber-50 border border-amber-250 rounded-lg text-[9px] text-amber-800 font-medium leading-normal flex gap-1.5 shadow-2xs">
+                  <span className="flex-shrink-0 text-amber-600">⚠️</span>
+                  <span><strong>Importante:</strong> Use apenas letras e números, sem espaços, acentos ou caracteres especiais.</span>
+                </div>
+              )}
+              {authTab === 'register' && authUsername && !/^[a-zA-Z0-9]+$/.test(authUsername) && (
+                <div className="mt-1.5 p-2.5 bg-rose-50 border border-rose-200 rounded-lg text-[9px] text-rose-800 font-bold leading-normal flex gap-1.5 shadow-2xs">
+                  <span className="flex-shrink-0 text-rose-600">❌</span>
+                  <span>Erro: Use apenas letras e números sem espaços ou acentos.</span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase font-extrabold text-slate-400 mb-1">
+                Senha
+              </label>
+              <input 
+                type="password" 
+                placeholder="••••••••"
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                className="w-full bg-[#eff4ff] text-xs font-semibold px-3 py-2.5 rounded-xl border-none focus:ring-2 focus:ring-blue-500 text-slate-800 placeholder-slate-400"
+              />
+            </div>
+
+            {authTab === 'register' && (
+              <div>
+                <label className="block text-[10px] uppercase font-extrabold text-slate-400 mb-2">
+                  Escolha um Avatar
+                </label>
+                <div className="flex gap-2 justify-center">
+                  {[
+                    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100',
+                    'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=100',
+                    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100',
+                    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100'
+                  ].map((url) => (
+                    <button
+                      key={url}
+                      type="button"
+                      onClick={() => setAuthSelectedAvatar(url)}
+                      className={cn(
+                        "w-8 h-8 rounded-full overflow-hidden border-2 cursor-pointer transition-all",
+                        authSelectedAvatar === url ? "border-blue-600 scale-105 shadow-xs" : "border-transparent opacity-70"
+                      )}
+                    >
+                      <img src={url} alt="Avatar option" className="w-[100%] h-[100%] object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Confirm Button */}
+          <button 
+            onClick={() => {
+              if (authTab === 'login') {
+                // LOGIN LOGIC
+                if (!authUsername || !authPassword) {
+                  triggerToast('Por favor, preencha usuário e senha.', 'error');
+                  return;
+                }
+                const user = registeredUsers.find(u => u.username === authUsername && u.password === authPassword);
+                if (user) {
+                  setIsLoggedIn(true);
+                  setCurrentUser({ username: user.username, name: user.name, avatar: user.avatar });
+                  setProfile(prev => ({
+                    ...prev,
+                    name: user.name,
+                    avatar: user.avatar
+                  }));
+                  setAuthUsername('');
+                  setAuthPassword('');
+                  triggerToast(`Bem-vindo de volta, ${user.name}!`, 'success');
+                } else {
+                  triggerToast('Usuário ou senha inválidos!', 'error');
+                }
+              } else {
+                // REGISTER LOGIC
+                if (!authName || !authUsername || !authPassword) {
+                  triggerToast('Por favor, preencha todos os campos.', 'error');
+                  return;
+                }
+                const usernameRegex = /^[a-zA-Z0-9]+$/;
+                if (!usernameRegex.test(authUsername)) {
+                  triggerToast('Erro: O nome de usuário deve conter apenas letras e números, sem espaços ou caracteres especiais.', 'error');
+                  return;
+                }
+                if (registeredUsers.some(u => u.username === authUsername)) {
+                  triggerToast('Este nome de usuário já está em uso!', 'error');
+                  return;
+                }
+                const newUser = {
+                  username: authUsername,
+                  password: authPassword,
+                  name: authName,
+                  avatar: authSelectedAvatar
+                };
+                setRegisteredUsers(prev => [...prev, newUser]);
+                setIsLoggedIn(true);
+                setCurrentUser({ username: newUser.username, name: newUser.name, avatar: newUser.avatar });
+                setProfile(prev => ({
+                  ...prev,
+                  name: newUser.name,
+                  avatar: newUser.avatar
+                }));
+                setAuthName('');
+                setAuthUsername('');
+                setAuthPassword('');
+                triggerToast(`Conta de ${newUser.name} criada e conectada com sucesso!`, 'success');
+              }
+            }}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl font-extrabold text-xs cursor-pointer transition-all text-center shadow-md font-sans"
+          >
+            {authTab === 'login' ? 'Confirmar Logon' : 'Registrar e Entrar'}
+          </button>
+        </div>
+
+        {/* Floating toast alert for login errors */}
+        <AnimatePresence>
+          {toast && (
+            <motion.div 
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className="fixed bottom-6 left-4 right-4 z-[100]"
+            >
+              <div className={cn(
+                "px-4 py-3 rounded-xl shadow-xl flex items-center justify-between gap-3 text-white max-w-sm mx-auto",
+                toast.type === 'error' ? "bg-rose-600" : "bg-blue-600"
+              )}>
+                <span className="text-xs font-semibold leading-relaxed">{toast.message}</span>
+                <button onClick={() => setToast(null)} className="shrink-0 p-1 rounded-full hover:bg-white/20">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 text-slate-800 relative font-sans select-none overflow-x-hidden pb-16">
       
@@ -872,8 +1111,8 @@ export default function HomeLayout() {
           {isLoggedIn ? (
             <div className="flex items-center gap-1.5 md:gap-2">
               <div className="hidden xs:flex flex-col items-end leading-none">
-                <span className="text-[10px] font-extrabold text-slate-700 select-none">Olá, {currentUser.name.split(' ')[0]}</span>
-                <span className="text-[8px] text-slate-400 font-mono select-none">@{currentUser.username}</span>
+                <span className="text-[10px] font-extrabold text-slate-700 select-none">Olá, {currentUser?.name ? currentUser.name.split(' ')[0] : 'Usuário'}</span>
+                <span className="text-[8px] text-slate-400 font-mono select-none">@{currentUser?.username || ''}</span>
               </div>
               <button 
                 onClick={() => {
